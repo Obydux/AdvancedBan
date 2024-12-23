@@ -92,13 +92,11 @@ public class Punishment {
                     }
                 }
             } catch (SQLException ex) {
-                Universal.get().debugSqlException(ex);
+                throw new UncheckedSQLException("While updating ID of punishment " + this, ex);
             }
         }
 
-        if (!silent) {
-            announce(cWarnings);
-        }
+        announce(cWarnings, silent);
 
         if (mi.isOnline(getName())) {
             final Object p = mi.getPlayer(getName());
@@ -116,7 +114,7 @@ public class Punishment {
 
         PunishmentManager.get().getLoadedHistory().add(this);
 
-        mi.callPunishmentEvent(this);
+        mi.callPunishmentEvent(this, silent);
 
         if (getType().getBasic() == PunishmentType.WARNING) {
             String cmd = null;
@@ -143,7 +141,7 @@ public class Punishment {
         }
     }
 
-    private void announce(int cWarnings) {
+    private void announce(int cWarnings, boolean silent) {
         List<String> notification = MessageManager.getLayout(mi.getMessages(),
                 getType().getName() + ".Notification",
                 "OPERATOR", getOperator(),
@@ -156,7 +154,7 @@ public class Punishment {
                 "DATE", getDate(start),
                 "COUNT", cWarnings + "");
 
-        mi.notify("ab.notify." + getType().getName(), notification);
+        mi.notify(silent ? "ab.silentnotify." + getType().getName() : "ab.notify." + getType().getName(), notification);
     }
 
     public void delete() {
@@ -199,7 +197,7 @@ public class Punishment {
         return MessageManager.getLayout(
                 isLayout ? mi.getLayouts() : mi.getMessages(),
                 isLayout ? "Message." + getReason().split(" ")[0].substring(1) : getType().getName() + ".Layout",
-                "OPERATOR", getOperator(),
+                "OPERATOR", getFormattedOperator(),
                 "PREFIX", mi.getBoolean(mi.getConfig(), "Disable Prefix", false) ? "" : MessageManager.getMessage("General.Prefix"),
                 "DURATION", getDuration(false),
                 "REASON", isLayout ? (getReason().split(" ").length < 2 ? "" : getReason().substring(getReason().split(" ")[0].length() + 1)) : getReason(),
@@ -268,6 +266,14 @@ public class Punishment {
 
     public String getOperator() {
         return this.operator;
+    }
+
+    public String getFormattedOperator() {
+        return isConsoleOperator() ? mi.getString(mi.getConfig(), "ConsoleName", "CONSOLE") : this.operator;
+    }
+
+    public boolean isConsoleOperator() {
+        return this.operator.equals("CONSOLE");
     }
 
     public String getCalculation() {

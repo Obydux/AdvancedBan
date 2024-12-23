@@ -13,7 +13,11 @@ MySQL:
   Username: admin
   Password: superSecret
   Port: 3306
-  Properties: 'verifyServerCertificate=false&useSSL=false&useUnicode=true&characterEncoding=utf8'
+  Properties: 'verifyServerCertificate=false&useSSL=false&useUnicode=true&characterEncoding=UTF-8'
+  # Don't touch this unless you know you need to change it
+  # If you are getting errors like 'Failed to validate connection (No operations allowed after connection closed.)', this may help
+  # Controls the maximum time, in milliseconds a connection in the pool can stay alive
+  Max-Lifetime: 1800000
 
 # Set to false if you want to have only short messages in the console
 # On startup and on the shutdown.
@@ -26,6 +30,9 @@ LockdownOnError: true
 
 # This will be the default reason to be displayed if none is given
 DefaultReason: "none"
+
+# Change the console identifier when a player gets punished through the console
+ConsoleName: "CONSOLE"
 
 # Change this if your server has a different time that your users.
 # e.g.: ServerTime: 16:43 | Your Time: 13:43 | TimeDiff has to be set to -3
@@ -136,3 +143,22 @@ Disable Prefix: false
 # Off by default, so AdvancedBan can override /ban from other plugins
 # This is a Bukkit-specific option. It has no meaning on BungeeCord
 Friendly Register Commands: false
+
+# Disable Tab-Completion entirely
+# This will disable everything Tab-Completion related on AdvancedBan, such as:
+# - Layout Tab Completion (@Layout)
+# - Time Layout Tab Completion (#Time)
+# - Options Tab Completion (-s for example)
+# - Player Autocompletion
+
+# If you wish to only disable tab-completion for layouts, check out the Layouts.yml file under "Use Message Layouts" and "Use Time Layouts"
+Use Tab Completion: true
+
+# These are the Punishment types that show up when running /history on a player
+FullHistory:
+  - "BAN"
+  - "IP_BAN"
+  - "MUTE"
+  - "WARNING"
+  - "KICK"
+  - "NOTE"

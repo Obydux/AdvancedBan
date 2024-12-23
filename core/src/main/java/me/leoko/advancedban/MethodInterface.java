@@ -68,7 +68,12 @@ public interface MethodInterface {
      */
     void setupMetrics();
 
+    @Deprecated
     boolean isBungee();
+
+    boolean isProxy();
+
+    ServerType getServerType();
 
     String clearFormatting(String text);
 
@@ -378,6 +383,14 @@ public interface MethodInterface {
      * @param punishment the punishment
      */
     void callPunishmentEvent(Punishment punishment);
+
+    /**
+     * Call punishment event.
+     *
+     * @param punishment the punishment
+     * @param silent true if the punishment was created with the "-s" flag
+     */
+    void callPunishmentEvent(Punishment punishment, boolean silent);
 
     /**
      * Call revoke punishment event.

@@ -1,6 +1,7 @@
 package me.leoko.advancedban.utils;
 
 import me.leoko.advancedban.MethodInterface;
+import me.leoko.advancedban.ServerType;
 import me.leoko.advancedban.Universal;
 import me.leoko.advancedban.manager.DatabaseManager;
 import me.leoko.advancedban.manager.MessageManager;
@@ -12,10 +13,12 @@ import me.leoko.advancedban.utils.commands.RevokeByIdProcessor;
 import me.leoko.advancedban.utils.commands.RevokeProcessor;
 import me.leoko.advancedban.utils.tabcompletion.BasicTabCompleter;
 import me.leoko.advancedban.utils.tabcompletion.CleanTabCompleter;
+import me.leoko.advancedban.utils.tabcompletion.NullTabCompleter;
 import me.leoko.advancedban.utils.tabcompletion.PunishmentTabCompleter;
 import me.leoko.advancedban.utils.tabcompletion.TabCompleter;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -288,9 +291,15 @@ public enum Command {
                 else
                     return list();
             }),
-            new ListProcessor(
-                    target -> PunishmentManager.get().getPunishments(target, null, false),
-                    "History", true, true),
+            input -> {
+                MethodInterface mi = Universal.get().getMethods();
+                List<PunishmentType> putList = new ArrayList<>();
+                mi.getStringList(mi.getConfig(),"FullHistory").forEach((typeString -> putList.add(PunishmentType.valueOf(typeString))));
+
+                new ListProcessor(
+                        target -> PunishmentManager.get().getPunishmentsOfTypes(target, putList, false),
+                        "History", true, true).accept(input);
+            },
             "History.Usage",
             "history"),
 
@@ -298,7 +307,7 @@ public enum Command {
             "\\S+( [1-9][0-9]*)?|\\S+|",
             new CleanTabCompleter((user, args) -> {
                 if(args.length == 1)
-                    if(Universal.get().getMethods().hasPerms(user, "ab.notes.other"))
+                    if(Universal.get().getMethods().hasPerms(user, "ab.warns.other"))
                         return list(CleanTabCompleter.PLAYER_PLACEHOLDER, "<Name>", "<Page>");
                     else
                         return list("<Page>");
@@ -417,7 +426,7 @@ public enum Command {
 
     SYSTEM_PREFERENCES("ab.systemprefs",
             ".*",
-            null,
+            new NullTabCompleter(),
             input -> {
                 MethodInterface mi = Universal.get().getMethods();
                 Calendar calendar = new GregorianCalendar();
@@ -511,8 +520,8 @@ public enum Command {
                 mi.sendMessage(sender, "  §cVersion §8• §7" + mi.getVersion());
                 mi.sendMessage(sender, "  §cLicense §8• §7Public");
                 mi.sendMessage(sender, "  §cStorage §8• §7" + (DatabaseManager.get().isUseMySQL() ? "MySQL (external)" : "HSQLDB (local)"));
-                mi.sendMessage(sender, "  §cServer §8• §7" + (Universal.get().isBungee() ? "Bungeecord" : "Spigot/Bukkit"));
-                if (Universal.get().isBungee()) {
+                mi.sendMessage(sender, "  §cServer §8• §7" + Universal.get().getServerType().toString());
+                if (Universal.get().isProxy() && Universal.get().getServerType() == ServerType.BUNGEECORD) {
                     mi.sendMessage(sender, "  §cRedisBungee §8• §7" + (Universal.isRedis() ? "true" : "false"));
                 }
                 mi.sendMessage(sender, "  §cUUID-Mode §8• §7" + UUIDManager.get().getMode());
@@ -528,6 +537,7 @@ public enum Command {
     private final Consumer<CommandInput> commandHandler;
     private final String usagePath;
     private final String[] names;
+    private static final NullTabCompleter NULL_TAB_COMPLETER = new NullTabCompleter();
 
     Command(String permission, Predicate<String[]> syntaxValidator,
             TabCompleter tabCompleter, Consumer<CommandInput> commandHandler, String usagePath, String... names) {
@@ -555,6 +565,9 @@ public enum Command {
 
 
     public TabCompleter getTabCompleter() {
+        MethodInterface mi = Universal.get().getMethods();
+        if (!mi.getBoolean(mi.getConfig(), "Use Tab Completion", true)) 
+            return NULL_TAB_COMPLETER;
         return tabCompleter;
     }
 

@@ -42,18 +42,26 @@ public class PunishmentTabCompleter implements TabCompleter {
                 amount = "X";
 
             if(amount.matches("\\d+|X")){
-                for(String unit : new String[]{"s", "m", "h", "d", "w", "mo"}){
+                for(String unit : new String[]{"s", "m", "h", "d", "w", "mo", "yr"}){
                     suggestions.add(amount + unit);
                 }
             }
-            for (String layout : methodInterface.getKeys(methodInterface.getLayouts(), "Time")) {
-                suggestions.add("#"+layout);
+            if (methodInterface.getBoolean(methodInterface.getLayouts(), "Use Time Layouts")) {
+                for (String layout : methodInterface.getKeys(methodInterface.getLayouts(), "Time")) {
+                    suggestions.add("#"+layout);
+                }
             }
+
         } else if((temporary && args.length == 3) || args.length == 2) {
             suggestions.add("Reason...");
-            for (String layout : methodInterface.getKeys(methodInterface.getLayouts(), "Message")) {
-                suggestions.add("@"+layout);
+            if (methodInterface.getBoolean(methodInterface.getLayouts(), "Use Message Layouts", true)) {
+
+                for (String layout : methodInterface.getKeys(methodInterface.getLayouts(), "Message")) {
+                    suggestions.add("@"+layout);
+                }
+
             }
+
         }
 
         if(args.length > 0){

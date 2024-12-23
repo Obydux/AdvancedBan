@@ -71,6 +71,16 @@ public class TestMethods implements MethodInterface {
     }
 
     @Override
+    public boolean isProxy() {
+        return false;
+    }
+
+    @Override
+    public ServerType getServerType() {
+        return ServerType.TEST;
+    }
+
+    @Override
     public String clearFormatting(String text) {
         return text;
     }
@@ -276,6 +286,11 @@ public class TestMethods implements MethodInterface {
 
     @Override
     public void callPunishmentEvent(Punishment punishment) {
+        System.out.println("Called punishment event!");
+    }
+
+    @Override
+    public void callPunishmentEvent(Punishment punishment, boolean silent) {
         System.out.println("Called punishment event!");
     }
 
